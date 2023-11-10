@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title class="title">Gráfica MQTT</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <div class="title-container">
+        <h1 class="chart-title">Gráfica MQTT</h1>
+    </div>
+    <div class="chart-container">
+        <canvas class="mqtt-chart"></canvas>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.2/mqttws31.js"></script>
+    <script>
+        // Configura el gráfico
+        const ctx = document.querySelector(".mqtt-chart").getContext("2d");
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Datos MQTT',
+                    data: [],
+                    borderColor: 'blue',
+                    borderWidth: 1,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Tiempo'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Valor'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Conéctate al servidor MQTT
+        const client = new Paho.MQTT.Client('10.0.3.201', 8083, "");
+
+        client.onConnectionLost = onConnectionLost;
+        client.onMessageArrived = onMessageArrived;
+
+        client.connect({ onSuccess: onConnect });
+
+        function onConnect() {
+            console.log("Conectado al servidor MQTT");
+            client.subscribe("angulo");
+        }
+
+        function onConnectionLost(responseObject) {
+            if (responseObject.errorCode !== 0) {
+                console.log("Conexión perdida: " + responseObject.errorMessage);
+            }
+        }
+
+        function onMessageArrived(message) {
+            const data = message.payloadString;
+            const time = new Date().toLocaleTimeString();
+
+            // Agrega los nuevos datos al gráfico
+            chart.data.labels.push(time);
+            chart.data.datasets[0].data.push(data);
+
+            // Limita la cantidad de puntos en el gráfico (ajusta según tus necesidades)
+            const maxDataPoints = 10;
+            if (chart.data.labels.length > maxDataPoints) {
+                chart.data.labels.shift();
+                chart.data.datasets[0].data.shift();
+            }
+
+            chart.update();
+        }
+    </script>
+</body>
+</html>

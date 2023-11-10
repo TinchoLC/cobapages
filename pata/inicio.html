@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>GrÃ¡fica de Temperatura</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+
+    body {
+      background-color: #f2f6ff;
+      font-family: 'Poppins', sans-serif;
+      color: #333;
+    }
+
+    h1, h3 {
+      font-weight: 600;  
+    }
+
+    button {
+      background-color: #6b72ff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 12px 24px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #5056ea;
+    }
+
+  </style>
+
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+  integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+</head>
+
+<body style="text-align: center;">
+
+  <h3>Integrantes del grupo:<br>DamiÃ¡n Carbone, Lucas Lamberti, MatÃ­as Nucciotti</h3>
+  <h1>GrÃ¡fica de temperatura<br>Medidor DHT11</h1>
+
+
+  <div style="width: 80%; margin: 20px auto;">
+    <canvas id="chart"></canvas>
+  </div>
+
+  <div class="card-body">
+    <form id="Conectar">
+      <input id="Ip" placeholder="IP">
+      <input id="Client" placeholder="Cliente">
+      <input id="User" placeholder="Usuario">
+      <input id="Password" placeholder="ContraseÃ±a">
+      <button id="btn1" type="submit" >Conectar con MQTT</button>
+      <button id="btn1" onclick="doconnect()">Conectar Default</button>
+    </form>
+  </div>
+
+  <button id="btn2" disabled type="button" onclick="desconectar()">Desconectar del MQTT</button>
+  
+  <br>
+  <p></p>
+  <button id="clear">Reiniciar</button>
+  <button type="button" onclick="resetZoom()">Volver a escala por defecto</button>
+
+  <script src="script.js"></script>
+</body>
+<body>
+
+
+
+
+<script>  
+  var mqttClient;
+  var isConectado=0;
+
+  $('#Conectar').submit(function (e) {
+    e.preventDefault();
+    var clientId ="emqx_cliente" //$('#Client').val(); // emqx_cliente
+    var username = ""//$('#User').val(); 
+    var password = ""//$('#Password').val();
+    var ip = "mqtt://localhost:8083/mqtt" //$('#Ip').val(); // ws://broker.emqx.io:8083/mqtt
+    doconect(clientId,username,password,ip);
+  });
+  
+  function doconect(clientId,username,password,ip){
+
+  document.getElementById('btn2').disabled = false;
+  document.getElementById('btn1').disabled = true;
+
+  mqttClient = mqtt.connect(ip, {
+    clientId,
+    username,
+    password
+  });
+  clearData();
+
+  mqttClient.on("error", (error) => {
+  console.log("Error: ", error);
+  mqttClient.end();
+  console.log("chau");
+  });
+
+  mqttClient.on("reconnect", () => {
+    console.log("Reconnecting...");
+  });
+
+  mqttClient.on("connect", () => {
+    isConectado = 1;
+    console.log("Client connected:" + clientId);
+    mqttClient.subscribe("Temp");
+  });
+
+
+  mqttClient.on("message", (topic, message) => {
+
+    addNewValues(parseFloat(message));
+
+    console.log(parseFloat(message));
+  
+  });
+
+  document.getElementById('Conectar').style.visibility = "hidden"
+  document.getElementById('btn2').style.visibility = "visible"
+  }
+  function desconectar(){
+    if(isConectado){
+      mqttClient.end(() => {
+      console.log("Client disconnected");
+      isConectado = 0;
+      document.getElementById('btn2').disabled = true;
+      document.getElementById('btn1').disabled = false;
+      document.getElementById('Conectar').style.visibility = "visible"
+      document.getElementById('btn2').style.visibility = "hidden"
+      });
+    }
+      
+  }
+  
+</script>
+
+<script src="script.js"></script>
+
+
+</body>
+</html>

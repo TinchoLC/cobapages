@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generador de números aleatorios</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Generador de Números Aleatorios</h1>
+    <div style="overflow-x: scroll; width: 400px;">
+        <canvas id="randomNumberChart" width="400" height="200"></canvas>
+    </div>
+    <input type="range" id="scrollBar" min="0" max="100" step="1" value="0">
+
+    <script>
+        var canvas = document.getElementById('randomNumberChart');
+        var ctx = canvas.getContext('2d');
+        var chart;
+        var maxDataPoints = 5; // Número máximo de puntos en la ventana
+        var chartData = {
+            labels: [],
+            datasets: [
+                {
+                    label: 'Números Aleatorios (Rojo)',
+                    data: [],
+                    borderColor: 'rgb(255, 0, 0)',
+                    borderWidth: 2,
+                    fill: false
+                },
+                {
+                    label: 'Números Aleatorios (Azul)',
+                    data: [],
+                    borderColor: 'rgb(0, 0, 255)',
+                    borderWidth: 2,
+                    fill: false
+                },
+                {
+                    label: 'Números Aleatorios (Verde)',
+                    data: [],
+                    borderColor: 'rgb(0, 255, 0)',
+                    borderWidth: 2,
+                    fill: false
+                }
+            ]
+        };
+
+        var currentX = 0;
+
+        function initializeChart() {
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: chartData,
+                options: {
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                        },
+                    },
+                },
+            });
+        }
+
+        initializeChart();
+
+        function generateRandomNumber() {
+            return Math.random();
+        }
+
+        function updateChart() {
+            var randomValue1 = generateRandomNumber();
+            var randomValue2 = generateRandomNumber();
+            var randomValue3 = generateRandomNumber();
+
+            if (chartData.labels.length >= maxDataPoints) {
+                chartData.labels.shift();
+                chartData.datasets[0].data.shift();
+                chartData.datasets[1].data.shift();
+                chartData.datasets[2].data.shift();
+            }
+
+            chartData.labels.push(currentX);
+            chartData.datasets[0].data.push(randomValue1);
+            chartData.datasets[1].data.push(randomValue2);
+            chartData.datasets[2].data.push(randomValue3);
+
+            chart.update();
+            currentX++; // Incrementa el valor de x
+        }
+
+        setInterval(updateChart, 1000); // Actualizar cada segundo
+
+        var scrollBar = document.getElementById('scrollBar');
+        scrollBar.addEventListener('change', function () {
+            chart.options.scales.x.min = parseInt(scrollBar.value, 10);
+            chart.options.scales.x.max = parseInt(scrollBar.value, 10) + maxDataPoints;
+            chart.update();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+.fondo{
+    background-color: rgb(87, 87, 87);
+}
+
+.titulo{
+    background-color: brown;
+    color: aliceblue;
+    text-align: center;
+    padding: 1px;
+    border: 5px solid black;
+    border-radius: 10px;
+    max-width: 1000px;
+    margin: 0 auto;
+    box-shadow: 5px 5px rgba(0, 0, 0, 0.5);
+}
+
+.texto{
+    color:antiquewhite;
+    text-align: center;
+    text-shadow: 3px 3.5px rgba(0, 0, 0, 0.5);
+    margin-top: 100px;
+    font-size: 23.5px;
+}
+
+.texto p{
+    font-size: 30px;
+}
+
+.tablaHistorial {
+    text-align: center;
+    color: antiquewhite;
+    border: 5px solid black;
+    max-width: 1000px;
+    margin: 0 auto;
+    margin-top: 250px;
+    font-size: 25px;
+    background-color: rgb(44, 44, 44);
+}
+
+.tablaHistorial table {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.tablaHistorial th, .tablaHistorial td {
+    border: 5px solid black;
+    max-width: 350px;
+    flex: 1;
+    padding: 10px;
+    background-color: rgb(27, 12, 12);
+    color: antiquewhite;
+    font-size: 23px;
+}
