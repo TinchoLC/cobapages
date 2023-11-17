@@ -1,13 +1,20 @@
 const xInput = document.getElementById('xInput');
 const yInput = document.getElementById('yInput');
+const Limit = document.getElementById('Limit');
+const Disconnect = document.getElementById('btn2');
+document.getElementById('btn2').style.visibility = "hidden"
+const Critic = document.getElementById('Critic');
+document.getElementById('Critic').style.visibility = "hidden"
 const plotButton = document.getElementById('plotButton');
 const chartCanvas = document.getElementById('chart');
 const clearButton = document.getElementById('clear');
+document.getElementById('clear').style.visibility = "hidden"
 const ctx = chartCanvas.getContext('2d');
 
 
 let chart;
 const dataPoints = [];
+const dataPoints2 = [];
 let zoomLevel = 1;
 let isDragging = false;
 let dragStartX;
@@ -18,9 +25,11 @@ const yMin = 0;
 let startedDate = Date.now();
 let indice=0;
 
+
 document.addEventListener('DOMContentLoaded', () => {
     plotChart(dataPoints);
   });
+
 
 function plotChart(dataPoints) {
     if (chart) {
@@ -37,9 +46,21 @@ function plotChart(dataPoints) {
                 backgroundColor: 'rgba(107, 114, 255, 1)',
                 borderWidth: 2,
                 fill: false,
+            },{
+                label: 'Limite',
+                data: dataPoints2,
+                borderColor: 'rgba(255, 69, 0, 1)',
+                backgroundColor: 'rgba(255, 69, 0, 0.5)',
+                borderWidth: 2,
+                fill: false,
             }]
         },
         options: {
+            elements: {
+                line: {
+                    borderColor: 'blue' // Cambia el color de los bordes del gráfico
+                }
+            },
             interaction: {
                 mode: 'nearest',
                 intersect: false,
@@ -61,6 +82,7 @@ function plotChart(dataPoints) {
                 }
             },
             plugins: {
+                
                 zoom: {
                     zoom: {
                         wheel: {
@@ -76,6 +98,9 @@ function plotChart(dataPoints) {
                         mode: 'xy',
                         onPan: handlePan
                     },
+                    drawBackground: {
+                        color: 'white'
+                    }
                 }
             }
         }
@@ -86,8 +111,13 @@ function saveInputValues(x, y) {
     dataPoints.push({ x, y });
 }
 
+function saveInputValues2(x, y) {
+    dataPoints2.push({ x, y });
+}
+
 function clearData() {
     dataPoints.length = 0;
+    dataPoints2.length = 0;
     startedDate = Date.now();
     plotChart(dataPoints);
 }
@@ -129,8 +159,6 @@ function addNewValues(x){
     if (!isNaN(x)) {
         saveInputValues(segundos, x);
         plotChart(dataPoints);
-    } else {
-        alert('Please enter valid numeric values for X and Y.');
     }
 
 }
