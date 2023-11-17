@@ -2,33 +2,65 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>GrÃ¡fica de Temperatura</title>
+  <title>Gráfica de Temperatura</title>
+  <link href="https://fonts.cdnfonts.com/css/pusab" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
   <style>
-
+    @import url('https://fonts.cdnfonts.com/css/pusab');
     body {
-      background-color: #f2f6ff;
-      font-family: 'Poppins', sans-serif;
+      background-image: url('fondogd.png');
+      background-repeat: no-repeat;
+      font-family: 'Pusab', sans-serif;
       color: #333;
+      background-attachment: cover;
+      background-size: 100% 100%;
     }
 
-    h1, h3 {
-      font-weight: 600;  
-    }
 
     button {
-      background-color: #6b72ff;
-      color: #fff;
+      color: white;
+    text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000; 
+      font-family: 'Pusab', sans-serif;
+      background-image: url('boton.png');
+      background-repeat: no-repeat;
+      background-size: 100% 100%;
       border: none;
-      border-radius: 4px;
+      border-radius: 20px;
       padding: 12px 24px;
-      font-size: 16px;
+      font-size: 20px;
       cursor: pointer;
+      height: 90px;
+      width: 200px;
     }
 
     button:hover {
-      background-color: #5056ea;
+      opacity: 60%;
+    }
+
+    #chart {
+      background-color: white;
+    }
+
+    input{
+      height: 45px;
+      text-align: center;
+      font-family: 'Pusab', sans-serif;
+      color: white;
+    text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000; 
+      background-image: url('boton.png');
+      background-repeat: no-repeat;
+      background-size: 100% 100%;
+      border-radius: 10px;
+      border: none;
     }
 
   </style>
@@ -41,10 +73,11 @@
 
 <body style="text-align: center;">
 
-  <h3>Integrantes del grupo:<br>DamiÃ¡n Carbone, Lucas Lamberti, MatÃ­as Nucciotti</h3>
-  <h1>GrÃ¡fica de temperatura<br>Medidor DHT11</h1>
+  <img src="logo.png" width="1000" height="90">
+  <p></p>
+  <img src="integrantes.png" width="1000" height="80">
 
-
+  <h1 id="Critic"><img src="Warning.png" width="1000" height="90"></h1>
   <div style="width: 80%; margin: 20px auto;">
     <canvas id="chart"></canvas>
   </div>
@@ -52,26 +85,25 @@
   <div class="card-body">
     <form id="Conectar">
       <input id="Ip" placeholder="IP">
-      <input id="Client" placeholder="Cliente">
+      <input id="Client" placeholder="CLienTe">
       <input id="User" placeholder="Usuario">
-      <input id="Password" placeholder="ContraseÃ±a">
+      <input id="Password" placeholder="ConTraseña">
+      <p><input id="Limit" placeholder="Limite de TemperaTura" required></p>
       <button id="btn1" type="submit" >Conectar con MQTT</button>
-      <button id="btn1" onclick="doconnect()">Conectar Default</button>
     </form>
   </div>
 
-  <button id="btn2" disabled type="button" onclick="desconectar()">Desconectar del MQTT</button>
+  <p><button id="btn2" disabled type="button" onclick="desconectar()">Desconectar del MQTT</button></p>
   
   <br>
   <p></p>
-  <button id="clear">Reiniciar</button>
+  <p><button id="clear">Reiniciar</button></p>
   <button type="button" onclick="resetZoom()">Volver a escala por defecto</button>
 
   <script src="script.js"></script>
 </body>
+
 <body>
-
-
 
 
 <script>  
@@ -80,14 +112,21 @@
 
   $('#Conectar').submit(function (e) {
     e.preventDefault();
-    var clientId ="emqx_cliente" //$('#Client').val(); // emqx_cliente
-    var username = ""//$('#User').val(); 
-    var password = ""//$('#Password').val();
-    var ip = "mqtt://localhost:8083/mqtt" //$('#Ip').val(); // ws://broker.emqx.io:8083/mqtt
-    doconect(clientId,username,password,ip);
+    var clientId = $('#Client').val();
+    var username = $('#User').val(); 
+    var password = $('#Password').val();
+    var ip = $('#Ip').val();
+    var Limit = $('#Limit').val();
+    if($('#Client').val() == [] && $('#User').val() == [] && $('#Password').val() == [] && $('#Ip').val() == []){
+    var clientId ="emqx_cliente"
+    var username = ""
+    var password = ""
+    var ip = "ws://broker.emqx.io:8083/mqtt"
+    }
+    doconect(clientId,username,password,ip,Limit);
   });
   
-  function doconect(clientId,username,password,ip){
+  function doconect(clientId,username,password,ip,Limit){
 
   document.getElementById('btn2').disabled = false;
   document.getElementById('btn1').disabled = true;
@@ -104,6 +143,7 @@
   mqttClient.end();
   console.log("chau");
   });
+  
 
   mqttClient.on("reconnect", () => {
     console.log("Reconnecting...");
@@ -113,14 +153,24 @@
     isConectado = 1;
     console.log("Client connected:" + clientId);
     mqttClient.subscribe("Temp");
+
+    saveInputValues2(-100000000, Limit);
+    saveInputValues2(100000000, Limit);
+    document.getElementById('clear').style.visibility = "hidden"
   });
 
 
   mqttClient.on("message", (topic, message) => {
 
     addNewValues(parseFloat(message));
-
     console.log(parseFloat(message));
+    if(parseFloat(message) == Limit){
+      mqttClient.publish(topic, 'TEMPERATURA CRITICA ALCANZADA');
+      document.getElementById('Critic').style.visibility = "visible"
+    }else if(parseFloat(message) > Limit) {
+      mqttClient.publish(topic, 'TEMPERATURA CRITICA SUPERADA');
+      document.getElementById('Critic').style.visibility = "visible"
+    }
   
   });
 
@@ -136,6 +186,7 @@
       document.getElementById('btn1').disabled = false;
       document.getElementById('Conectar').style.visibility = "visible"
       document.getElementById('btn2').style.visibility = "hidden"
+      document.getElementById('clear').style.visibility = "visible"
       });
     }
       
